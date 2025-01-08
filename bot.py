@@ -9,6 +9,7 @@ load_dotenv()  # Load environment variables
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 BASE_URL = os.getenv('BASE_URL')
+ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '0'))  # Get admin ID from environment variable
 
 async def start(update: Update, context: CallbackContext) -> None:
     """Send welcome message when /start is issued."""
@@ -42,20 +43,22 @@ async def generate_link(update: Update, context: CallbackContext) -> None:
 
 async def handle_tracking_data(tracking_id: str, ip_data: dict, bot) -> None:
     """Handle the tracking data received from the API."""
-    # Format the received data
-    info = (
-        "🎯 New click detected!\n\n"
-        f"📍 IP Address: `{ip_data.get('ip', 'Unknown')}`\n"
-        f"🌍 Country: {ip_data.get('country_name', 'Unknown')}\n"
-        f"🏢 City: {ip_data.get('city', 'Unknown')}\n"
-        f"🌐 ISP: {ip_data.get('isp', 'Unknown')}\n"
-        f"🕒 Timezone: {ip_data.get('timezone', 'Unknown')}\n"
-    )
-    
-    # Send the information to the user who generated the link
-    # You'll need to store and retrieve the user_id associated with tracking_id
-    # This is a simplified version
-    await bot.send_message(chat_id=USER_ID, text=info, parse_mode='Markdown')
+    try:
+        # Format the received data
+        info = (
+            "🎯 New click detected!\n\n"
+            f"📍 IP Address: `{ip_data.get('ip', 'Unknown')}`\n"
+            f"🌍 Country: {ip_data.get('country_name', 'Unknown')}\n"
+            f"🏢 City: {ip_data.get('city', 'Unknown')}\n"
+            f"🌐 ISP: {ip_data.get('isp', 'Unknown')}\n"
+            f"🕒 Timezone: {ip_data.get('timezone', 'Unknown')}\n"
+        )
+        
+        # Send the information to admin
+        if ADMIN_USER_ID != 0:
+            await bot.send_message(chat_id=ADMIN_USER_ID, text=info, parse_mode='Markdown')
+    except Exception as e:
+        print(f"Error handling tracking data: {e}")
 
 async def help_command(update: Update, context: CallbackContext) -> None:
     """Send help message."""

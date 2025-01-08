@@ -3,8 +3,13 @@ import requests
 from bot import handle_tracking_data
 import asyncio
 import os
+from telegram import Bot
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
+app.bot = Bot(token=os.getenv('BOT_TOKEN'))
 
 @app.route('/track/<tracking_id>')
 def track(tracking_id):
