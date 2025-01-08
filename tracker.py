@@ -25,8 +25,8 @@ def track(tracking_id):
             
         print(f"Received request from IP: {ip}")
         
-        # Make request to FreeIPAPI
-        api_url = f'https://freeipapi.com/api/json/{ip}'
+        # Make request to ipapi.co
+        api_url = f'http://ip-api.com/json/{ip}'
         headers = {
             'User-Agent': 'Mozilla/5.0',
             'Accept': 'application/json'
@@ -38,8 +38,23 @@ def track(tracking_id):
         if response.status_code == 200:
             ip_data = response.json()
             print(f"Received API response: {ip_data}")
+            
+            # Transform data to our format
+            transformed_data = {
+                'ip': ip_data.get('query'),
+                'country': ip_data.get('country'),
+                'city': ip_data.get('city'),
+                'region': ip_data.get('regionName'),
+                'timezone': ip_data.get('timezone'),
+                'isp': ip_data.get('isp'),
+                'org': ip_data.get('org'),
+                'as': ip_data.get('as'),
+                'latitude': ip_data.get('lat'),
+                'longitude': ip_data.get('lon')
+            }
+            
             # Handle the tracking data
-            asyncio.run(handle_tracking_data(tracking_id, ip_data, app.bot))
+            asyncio.run(handle_tracking_data(tracking_id, transformed_data, app.bot))
         else:
             error_msg = f"API Error: {response.status_code}"
             print(error_msg)
