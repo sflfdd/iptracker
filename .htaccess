@@ -1,0 +1,7 @@
+AddHandler cgi-script .py
+Options +ExecCGI
+DirectoryIndex index.py
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /index.py/$1 [L] 
