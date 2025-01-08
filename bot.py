@@ -44,14 +44,24 @@ async def generate_link(update: Update, context: CallbackContext) -> None:
 async def handle_tracking_data(tracking_id: str, ip_data: dict, bot) -> None:
     """Handle the tracking data received from the API."""
     try:
+        # Check if there was an error getting IP data
+        if "error" in ip_data:
+            error_msg = (
+                "⚠️ Error getting IP information:\n"
+                f"`{ip_data.get('error', 'Unknown error')}`"
+            )
+            if ADMIN_USER_ID != 0:
+                await bot.send_message(chat_id=ADMIN_USER_ID, text=error_msg, parse_mode='Markdown')
+            return
+
         # Format the received data
         info = (
             "🎯 New click detected!\n\n"
             f"📍 IP Address: `{ip_data.get('ip', 'Unknown')}`\n"
-            f"🌍 Country: {ip_data.get('country_name', 'Unknown')}\n"
-            f"🏢 City: {ip_data.get('city', 'Unknown')}\n"
-            f"🌐 ISP: {ip_data.get('isp', 'Unknown')}\n"
-            f"🕒 Timezone: {ip_data.get('timezone', 'Unknown')}\n"
+            f"🌍 Country: {ip_data.get('countryName', 'Unknown')}\n"
+            f"🏢 City: {ip_data.get('cityName', 'Unknown')}\n"
+            f"🌐 Region: {ip_data.get('regionName', 'Unknown')}\n"
+            f"🕒 Timezone: {ip_data.get('timeZone', 'Unknown')}\n"
         )
         
         # Send the information to admin
@@ -59,6 +69,9 @@ async def handle_tracking_data(tracking_id: str, ip_data: dict, bot) -> None:
             await bot.send_message(chat_id=ADMIN_USER_ID, text=info, parse_mode='Markdown')
     except Exception as e:
         print(f"Error handling tracking data: {e}")
+        error_msg = f"⚠️ Error processing tracking data: {str(e)}"
+        if ADMIN_USER_ID != 0:
+            await bot.send_message(chat_id=ADMIN_USER_ID, text=error_msg)
 
 async def help_command(update: Update, context: CallbackContext) -> None:
     """Send help message."""
